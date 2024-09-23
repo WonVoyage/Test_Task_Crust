@@ -1,4 +1,5 @@
 #include "Carrier.h"
+#include "Warehouse.h"
 
 ACarrier::ACarrier()
 {
@@ -7,6 +8,7 @@ ACarrier::ACarrier()
     TargetWarehouse = nullptr;
     SourceWarehouse = nullptr;
     Action_Type = EActionType::NoneActive;
+    Is_Avaliable = true;
 }
 
 void ACarrier::BeginPlay()
@@ -20,10 +22,9 @@ void ACarrier::PickUpResource(AWarehouse* FromWarehouse)
     {
         int32 AmountToPick = FMath::Min(FromWarehouse->CurrentAmount, 50); // Забираем до 50 ресурсов за раз
         FromWarehouse->RemoveResource(AmountToPick);
-
-        CarriedResourceType = FromWarehouse->ResourceType;
         CarriedAmount += AmountToPick;
         SourceWarehouse = FromWarehouse;
+        Is_Avaliable = false;
     }
 }
 
@@ -34,5 +35,30 @@ void ACarrier::DeliverResource(AWarehouse* ToWarehouse)
         ToWarehouse->AddResource(CarriedAmount);
         CarriedAmount = 0;  // Грузчик пуст
         TargetWarehouse = ToWarehouse;  // Помечаем склад, куда доставили
+        Is_Avaliable = true;
+    }
+}
+
+void ACarrier::MoveToWarehouse(AWarehouse* ToWarehouse)
+{
+    if (ToWarehouse)
+    {
+        TargetWarehouse = ToWarehouse;
+
+        // Команда для перемещения грузчика к складу
+
+        //CarrierAIController = Cast<AAIController>(GetController());
+        //if (CarrierAIController)
+        //    CarrierAIController->MoveToActor(Warehouse, 50.0f);
+    }
+}
+
+void ACarrier::OnArrivedAtWarehouse()
+{
+    if (TargetWarehouse)
+    {
+        TargetWarehouse->AddResource(CarriedAmount);
+        CarriedAmount = 0;
+        Is_Avaliable = true;
     }
 }

@@ -35,6 +35,8 @@ void ALoaderAIController::FindNearestWarehouse()
     for (AActor* WarehouseActor : FoundWarehouses)
     {
         AWarehouse* Warehouse = Cast<AWarehouse>(WarehouseActor);
+
+        if (Warehouse == Carrier->TargetWarehouse) continue;
         if (Warehouse && Warehouse->ResourceType == CarriedResourceType)
         {
             // Сравниваем расстояния, чтобы найти ближайший склад

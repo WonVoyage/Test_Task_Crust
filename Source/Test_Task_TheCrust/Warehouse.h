@@ -4,6 +4,8 @@
 #include "GameFramework/Actor.h"
 #include "Warehouse.generated.h"
 
+class ACarrier;
+
 UCLASS()
 class AWarehouse : public AActor
 {
@@ -14,7 +16,10 @@ public:
 
     UFUNCTION(BlueprintCallable, Category = "Warehouse") void AddResource(int32 Amount);
     UFUNCTION(BlueprintCallable, Category = "Warehouse") void RemoveResource(int32 Amount);
-    UFUNCTION(BlueprintCallable, Category = "Warehouse") void UpdateAmount(int32 amount);
+
+    void DistributeResourceToNeighbors();
+    TArray<AWarehouse*> FindNeighboringWarehouses();
+    ACarrier* FindAvailableCarrier();
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Warehouse") int32 ResourceType;  // (от 0 до 49)
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Warehouse") int32 MaxCapacity;

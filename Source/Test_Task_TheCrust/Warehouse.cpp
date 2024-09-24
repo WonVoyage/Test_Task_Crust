@@ -50,18 +50,31 @@ void AWarehouse::DistributeResourceToNeighbors()
 
         float NeighborFillPercentage = static_cast<float>(NeighborWarehouse->CurrentAmount) / NeighborWarehouse->MaxCapacity;
 
+        ACarrier* AvailableCarrier = FindAvailableCarrier();
+
         if (NeighborFillPercentage < CurrentFillPercentage)
         {
             int32 ResourceToTransfer = (CurrentAmount - NeighborWarehouse->CurrentAmount) / 2;
 
             if (ResourceToTransfer > 0)
             {
-                ACarrier* AvailableCarrier = FindAvailableCarrier();
-
                 if (AvailableCarrier)
                 {
                     AvailableCarrier->MoveToWarehouse(NeighborWarehouse);
                     CurrentAmount -= ResourceToTransfer;
+                }
+            }
+        }
+        else if (NeighborFillPercentage > CurrentFillPercentage)
+        {
+            int32 ResourceToTransfer = (NeighborWarehouse->CurrentAmount - CurrentAmount) / 2;
+
+            if (ResourceToTransfer > 0)
+            {
+                if (AvailableCarrier)
+                {
+                    AvailableCarrier->MoveToWarehouse(NeighborWarehouse);
+                    AvailableCarrier->Action_Type = EActionType::GoToTake;
                 }
             }
         }

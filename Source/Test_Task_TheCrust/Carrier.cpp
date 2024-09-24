@@ -57,8 +57,26 @@ void ACarrier::OnArrivedAtWarehouse()
 {
     if (TargetWarehouse)
     {
-        TargetWarehouse->AddResource(CarriedAmount);
-        CarriedAmount = 0;
-        Is_Avaliable = true;
+        switch (Action_Type)
+        {
+        case EActionType::NoneActive:
+            break;
+
+        case EActionType::GoToWaitingPoint:
+            break;
+
+        case EActionType::GoToTake:
+            TargetWarehouse->DistributeResourceToNeighbors();
+            break;
+
+        case EActionType::GoToGive:
+            TargetWarehouse->AddResource(CarriedAmount);
+            CarriedAmount = 0;
+            Is_Avaliable = true;
+            break;
+
+        default:
+            break;
+        }
     }
 }

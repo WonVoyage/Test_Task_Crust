@@ -10,7 +10,6 @@ UENUM(BlueprintType)
 enum class EActionType : uint8
 {
     NoneActive,
-    IsWaiting,
     GoToWaitingPoint,
     GoToTake,
     GoToGive

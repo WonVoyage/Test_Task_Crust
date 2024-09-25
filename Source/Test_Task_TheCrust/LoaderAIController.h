@@ -6,7 +6,7 @@
 #include "CoreMinimal.h"
 #include "AIController.h"
 #include "LoaderAIController.generated.h"
-
+//-------------------------------------------------------------------------------------------------------------
 UCLASS()
 class ALoaderAIController : public AAIController
 {
@@ -18,6 +18,6 @@ public:
 protected:
     virtual void BeginPlay() override;
 
-    UFUNCTION(BlueprintCallable)
-    void FindNearestWarehouse();
+    UFUNCTION(BlueprintCallable) void Move_To_Warehouse();
 };
+//-------------------------------------------------------------------------------------------------------------

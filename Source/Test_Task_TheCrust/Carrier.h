@@ -5,17 +5,16 @@
 #include "Carrier.generated.h"
 
 class AWarehouse;
-
+//-------------------------------------------------------------------------------------------------------------
 UENUM(BlueprintType)
 enum class EActionType : uint8
 {
-    NoneActive,
-    GoToWaitingPoint,
-    GoToTake,
-    GoToGive
+    None,
+    Go_To_Waiting_Point,
+    Go_To_Take,
+    Go_To_Give
 };
-
-
+//-------------------------------------------------------------------------------------------------------------
 UCLASS()
 class ACarrier : public ACharacter
 {
@@ -24,19 +23,20 @@ class ACarrier : public ACharacter
 public:
     ACarrier();
 
-    UFUNCTION(BlueprintCallable, Category = "Loader") void PickUpResource(AWarehouse* FromWarehouse);
-    UFUNCTION(BlueprintCallable, Category = "Loader") void DeliverResource(AWarehouse* ToWarehouse);
-    UFUNCTION(BlueprintCallable, Category = "Loader") void OnArrivedAtWarehouse();
+    UFUNCTION(BlueprintCallable, Category = "Loader") void Pick_Up_Resource(AWarehouse *from_warehouse);
+    UFUNCTION(BlueprintCallable, Category = "Loader") void Deliver_Resource(AWarehouse *to_warehouse);
+    UFUNCTION(BlueprintCallable, Category = "Loader") void On_Arrived_At_Warehouse();
     
-    void MoveToWarehouse(AWarehouse* ToWarehouse);
+    void Move_To_Warehouse(AWarehouse *to_warehouse);
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Loader") int32 CarriedResourceType;
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Loader") int32 CarriedAmount;
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Loader") AWarehouse* TargetWarehouse;
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Loader") AWarehouse* SourceWarehouse;
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Loader") EActionType Action_Type;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Loader") bool Is_Avaliable;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Loader") int Carried_Resource;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Loader") int Carried_Amount;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Loader") AWarehouse *Target_Warehouse;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Loader") AWarehouse *Source_Warehouse;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Loader") EActionType Action_Type;
 
 protected:
     virtual void BeginPlay() override;
 };
+//-------------------------------------------------------------------------------------------------------------

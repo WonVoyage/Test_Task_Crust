@@ -1,11 +1,9 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Test_Task_TheCrustCharacter.generated.h"
-
+//-------------------------------------------------------------------------------------------------------------
 UCLASS(Blueprintable)
 class ATest_Task_TheCrustCharacter : public ACharacter
 {
@@ -14,21 +12,13 @@ class ATest_Task_TheCrustCharacter : public ACharacter
 public:
 	ATest_Task_TheCrustCharacter();
 
-	// Called every frame.
-	virtual void Tick(float DeltaSeconds) override;
+	virtual void Tick(float delta_seconds) override;
 
-	/** Returns TopDownCameraComponent subobject **/
-	FORCEINLINE class UCameraComponent* GetTopDownCameraComponent() const { return TopDownCameraComponent; }
-	/** Returns CameraBoom subobject **/
-	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
+	FORCEINLINE class UCameraComponent *Get_TopDown_CameraComponent() const;
+	FORCEINLINE class USpringArmComponent *Get_CameraBoom() const;
 
 private:
-	/** Top down camera */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	class UCameraComponent* TopDownCameraComponent;
-
-	/** Camera boom positioning the camera above the character */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	class USpringArmComponent* CameraBoom;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true")) class UCameraComponent* TopDown_CameraComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true")) class USpringArmComponent* CameraBoom;
 };
-
+//-------------------------------------------------------------------------------------------------------------

@@ -1,5 +1,3 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
-
 #include "Test_Task_TheCrustCharacter.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Camera/CameraComponent.h"
@@ -10,24 +8,20 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Materials/Material.h"
 #include "Engine/World.h"
-
+//-------------------------------------------------------------------------------------------------------------
 ATest_Task_TheCrustCharacter::ATest_Task_TheCrustCharacter()
 {
-	// Set size for player capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
-	// Don't rotate character to camera direction
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
 
-	// Configure character movement
-	GetCharacterMovement()->bOrientRotationToMovement = true; // Rotate character to moving direction
+	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 640.f, 0.f);
 	GetCharacterMovement()->bConstrainToPlane = true;
 	GetCharacterMovement()->bSnapToPlaneAtStart = true;
 
-	// Create a camera boom...
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->SetUsingAbsoluteRotation(true); // Don't want arm to rotate when character does
@@ -35,17 +29,26 @@ ATest_Task_TheCrustCharacter::ATest_Task_TheCrustCharacter()
 	CameraBoom->SetRelativeRotation(FRotator(-60.f, 0.f, 0.f));
 	CameraBoom->bDoCollisionTest = false; // Don't want to pull camera in when it collides with level
 
-	// Create a camera...
-	TopDownCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("TopDownCamera"));
-	TopDownCameraComponent->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
-	TopDownCameraComponent->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
+	TopDown_CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("TopDownCamera"));
+	TopDown_CameraComponent->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
+	TopDown_CameraComponent->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
-	// Activate ticking in order to update the cursor every frame.
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
 }
-
-void ATest_Task_TheCrustCharacter::Tick(float DeltaSeconds)
+//-------------------------------------------------------------------------------------------------------------
+void ATest_Task_TheCrustCharacter::Tick(float delta_seconds)
 {
-    Super::Tick(DeltaSeconds);
+    Super::Tick(delta_seconds);
 }
+//-------------------------------------------------------------------------------------------------------------
+UCameraComponent* ATest_Task_TheCrustCharacter::Get_TopDown_CameraComponent() const
+{
+	return TopDown_CameraComponent;
+}
+//-------------------------------------------------------------------------------------------------------------
+USpringArmComponent* ATest_Task_TheCrustCharacter::Get_CameraBoom() const
+{
+	return CameraBoom;
+}
+//-------------------------------------------------------------------------------------------------------------

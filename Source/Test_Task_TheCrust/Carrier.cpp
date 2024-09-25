@@ -1,49 +1,51 @@
 #include "Carrier.h"
 #include "Warehouse.h"
-
+//-------------------------------------------------------------------------------------------------------------
 ACarrier::ACarrier()
 {
-    CarriedResourceType = -1;  // Грузчик пуст по умолчанию
-    CarriedAmount = 0;
-    TargetWarehouse = nullptr;
-    SourceWarehouse = nullptr;
-    Action_Type = EActionType::NoneActive;
     Is_Avaliable = true;
+    Carried_Resource = -1;  // Грузчик пуст по умолчанию
+    Carried_Amount = 0;
+    Target_Warehouse = nullptr;
+    Source_Warehouse = nullptr;
+    Action_Type = EActionType::None;
 }
-
+//-------------------------------------------------------------------------------------------------------------
 void ACarrier::BeginPlay()
 {
     Super::BeginPlay();
 }
-
-void ACarrier::PickUpResource(AWarehouse* FromWarehouse)
+//-------------------------------------------------------------------------------------------------------------
+void ACarrier::Pick_Up_Resource(AWarehouse *from_warehouse)
 {
-    if (FromWarehouse && FromWarehouse->CurrentAmount > 0 && (CarriedResourceType == -1 || FromWarehouse->ResourceType == CarriedResourceType))
+    if (from_warehouse && from_warehouse->Current_Amount > 0 && (Carried_Resource == -1 || from_warehouse->Resource == Carried_Resource))
     {
-        int32 AmountToPick = FMath::Min(FromWarehouse->CurrentAmount, 50); // Забираем до 50 ресурсов за раз
-        FromWarehouse->RemoveResource(AmountToPick);
-        CarriedAmount += AmountToPick;
-        SourceWarehouse = FromWarehouse;
+        int amount_to_pick;
+
+        amount_to_pick = FMath::Min(from_warehouse->Current_Amount, 50); // Забираем до 50 ресурсов за раз
+        from_warehouse->Remove_Resource(amount_to_pick);
+        Carried_Amount += amount_to_pick;
+        Source_Warehouse = from_warehouse;
         Is_Avaliable = false;
     }
 }
-
-void ACarrier::DeliverResource(AWarehouse* ToWarehouse)
+//-------------------------------------------------------------------------------------------------------------
+void ACarrier::Deliver_Resource(AWarehouse *to_warehouse)
 {
-    if (ToWarehouse && ToWarehouse->ResourceType == CarriedResourceType && ToWarehouse->CurrentAmount + CarriedAmount <= ToWarehouse->MaxCapacity)
+    if (to_warehouse && to_warehouse->Resource == Carried_Resource && to_warehouse->Current_Amount + Carried_Amount <= to_warehouse->Capacity)
     {
-        ToWarehouse->AddResource(CarriedAmount);
-        CarriedAmount = 0;  // Грузчик пуст
-        TargetWarehouse = ToWarehouse;  // Помечаем склад, куда доставили
+        to_warehouse->Add_Resource(Carried_Amount);
+        Carried_Amount = 0;
+        Target_Warehouse = to_warehouse;
         Is_Avaliable = true;
     }
 }
-
-void ACarrier::MoveToWarehouse(AWarehouse* ToWarehouse)
+//-------------------------------------------------------------------------------------------------------------
+void ACarrier::Move_To_Warehouse(AWarehouse *to_warehouse)
 {
-    if (ToWarehouse)
+    if (to_warehouse)
     {
-        TargetWarehouse = ToWarehouse;
+        Target_Warehouse = to_warehouse;
 
         // Команда для перемещения грузчика к складу
 
@@ -52,26 +54,26 @@ void ACarrier::MoveToWarehouse(AWarehouse* ToWarehouse)
         //    CarrierAIController->MoveToActor(Warehouse, 50.0f);
     }
 }
-
-void ACarrier::OnArrivedAtWarehouse()
+//-------------------------------------------------------------------------------------------------------------
+void ACarrier::On_Arrived_At_Warehouse()
 {
-    if (TargetWarehouse)
+    if (Target_Warehouse)
     {
         switch (Action_Type)
         {
-        case EActionType::NoneActive:
+        case EActionType::None:
             break;
 
-        case EActionType::GoToWaitingPoint:
+        case EActionType::Go_To_Waiting_Point:
             break;
 
-        case EActionType::GoToTake:
-            TargetWarehouse->DistributeResourceToNeighbors();
+        case EActionType::Go_To_Take:
+            Target_Warehouse->Distribute_Resource_To_Neighbors();
             break;
 
-        case EActionType::GoToGive:
-            TargetWarehouse->AddResource(CarriedAmount);
-            CarriedAmount = 0;
+        case EActionType::Go_To_Give:
+            Target_Warehouse->Add_Resource(Carried_Amount);
+            Carried_Amount = 0;
             Is_Avaliable = true;
             break;
 
@@ -80,3 +82,4 @@ void ACarrier::OnArrivedAtWarehouse()
         }
     }
 }
+//-------------------------------------------------------------------------------------------------------------

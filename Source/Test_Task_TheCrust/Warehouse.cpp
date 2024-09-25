@@ -2,88 +2,119 @@
 #include "Carrier.h"
 
 #include <Kismet/GameplayStatics.h>
-
+//-------------------------------------------------------------------------------------------------------------
 AWarehouse::AWarehouse()
 {
     PrimaryActorTick.bCanEverTick = true;
 
-    MaxCapacity = FMath::RandRange(10, 500); // Случайный лимит от 10 до 500
-    CurrentAmount = 0;
-    ResourceType = FMath::RandRange(0, 49); // Случайный тип ресурса
-    bIsActive = true;
+    Capacity = FMath::RandRange(10, 500);
+    Current_Amount = 0;
+    Resource = FMath::RandRange(0, 49);
+    Is_Active = true;
 }
-
+//-------------------------------------------------------------------------------------------------------------
 void AWarehouse::BeginPlay()
 {
     Super::BeginPlay();
-}
+    ACarrier* carrier = Find_Available_Carrier();
 
-void AWarehouse::AddResource(int32 Amount)
-{
-    if (bIsActive && CurrentAmount + Amount <= MaxCapacity)
-        CurrentAmount += Amount;
+    float nearest_distance = FLT_MAX;
+    int carried_resource = 0;
+    TArray<AActor*> found_warehouses;
+    AWarehouse* nearest_warehouse = nullptr;
+    UGameplayStatics::GetAllActorsOfClass(GetWorld(), AWarehouse::StaticClass(), found_warehouses);
 
-    if (CurrentAmount > MaxCapacity)
-        CurrentAmount = MaxCapacity;
+    carried_resource = carrier->Carried_Resource;
 
-    DistributeResourceToNeighbors();
-}
-
-void AWarehouse::RemoveResource(int32 Amount)
-{
-    if (bIsActive && CurrentAmount - Amount >= 0)
-        CurrentAmount -= Amount;
-}
-
-void AWarehouse::DistributeResourceToNeighbors()
-{
-    TArray<AWarehouse*> NeighboringWarehouses = FindNeighboringWarehouses();
-
-    if (NeighboringWarehouses.Num() == 0) return;
-
-    float CurrentFillPercentage = static_cast<float>(CurrentAmount) / MaxCapacity;
-
-    for (AWarehouse* NeighborWarehouse : NeighboringWarehouses)
+    for (AActor *warehouse_actor : found_warehouses)
     {
-        if (!NeighborWarehouse) continue;
-        if (NeighborWarehouse->ResourceType != ResourceType) continue;
+        AWarehouse *warehouse = Cast<AWarehouse>(warehouse_actor);
 
-        float NeighborFillPercentage = static_cast<float>(NeighborWarehouse->CurrentAmount) / NeighborWarehouse->MaxCapacity;
-
-        ACarrier* AvailableCarrier = FindAvailableCarrier();
-
-        if (NeighborFillPercentage < CurrentFillPercentage)
+        if (warehouse == carrier->Target_Warehouse) continue;
+        if (warehouse && warehouse->Resource == carried_resource)
         {
-            int32 ResourceToTransfer = (CurrentAmount - NeighborWarehouse->CurrentAmount) / 2;
+            // Сравниваем расстояния, чтобы найти ближайший склад
+            float distance = FVector::Dist(warehouse->GetActorLocation(), carrier->GetActorLocation());
 
-            if (ResourceToTransfer > 0)
+            if (distance < nearest_distance)
             {
-                if (AvailableCarrier)
+                nearest_warehouse = warehouse;
+                nearest_distance = distance;
+                carrier->Source_Warehouse = carrier->Target_Warehouse;
+                carrier->Target_Warehouse = nearest_warehouse;
+            }
+        }
+    }
+
+
+}
+//-------------------------------------------------------------------------------------------------------------
+void AWarehouse::Add_Resource(int amount)
+{
+    if (Is_Active && Current_Amount + amount <= Capacity)
+        Current_Amount += amount;
+
+    if (Current_Amount > Capacity)
+        Current_Amount = Capacity;
+
+    Distribute_Resource_To_Neighbors();
+}
+//-------------------------------------------------------------------------------------------------------------
+void AWarehouse::Remove_Resource(int amount)
+{
+    if (Is_Active && Current_Amount - amount >= 0)
+        Current_Amount -= amount;
+}
+//-------------------------------------------------------------------------------------------------------------
+void AWarehouse::Distribute_Resource_To_Neighbors()
+{
+    TArray<AWarehouse*> neighboring_warehouses = Find_Neighboring_Warehouses();
+
+    if (neighboring_warehouses.Num() == 0) return;
+
+    float current_fill_percentage = static_cast<float>(Current_Amount) / Capacity;
+
+    for (AWarehouse *neighbor_warehouse : neighboring_warehouses)
+    {
+        if (!neighbor_warehouse) continue;
+        if (neighbor_warehouse->Resource != Resource) continue;
+
+        float neighbor_fill_percentage = static_cast<float>(neighbor_warehouse->Current_Amount) / neighbor_warehouse->Capacity;
+
+        ACarrier *available_carrier = Find_Available_Carrier();
+
+        if (neighbor_fill_percentage < current_fill_percentage)
+        {
+            int resource_to_transfer = (Current_Amount - neighbor_warehouse->Current_Amount) / 2;
+
+            if (resource_to_transfer > 0)
+            {
+                if (available_carrier)
                 {
-                    AvailableCarrier->MoveToWarehouse(NeighborWarehouse);
-                    CurrentAmount -= ResourceToTransfer;
+                    //available_carrier->Move_To_Warehouse(neighbor_warehouse);
+                    Current_Amount -= resource_to_transfer;
                 }
             }
         }
-        else if (NeighborFillPercentage > CurrentFillPercentage)
+        else if (neighbor_fill_percentage > current_fill_percentage)
         {
-            int32 ResourceToTransfer = (NeighborWarehouse->CurrentAmount - CurrentAmount) / 2;
+            int resource_to_Transfer = (neighbor_warehouse->Current_Amount - Current_Amount) / 2;
 
-            if (ResourceToTransfer > 0)
+            if (resource_to_Transfer > 0)
             {
-                if (AvailableCarrier)
+                if (available_carrier)
                 {
-                    AvailableCarrier->MoveToWarehouse(NeighborWarehouse);
-                    AvailableCarrier->Action_Type = EActionType::GoToTake;
+                    //available_carrier->Move_To_Warehouse(neighbor_warehouse);
+                    available_carrier->Action_Type = EActionType::Go_To_Take;
                 }
             }
         }
     }
 }
-
-TArray<AWarehouse*> AWarehouse::FindNeighboringWarehouses()
+//-------------------------------------------------------------------------------------------------------------
+TArray<AWarehouse*> AWarehouse::Find_Neighboring_Warehouses()
 {
-    TArray<AWarehouse*> NeighboringWarehouses;
+    TArray<AWarehouse*> neighboring_warehouses;
     TArray<AActor*> AllWarehouses;
 
     UGameplayStatics::GetAllActorsOfClass(GetWorld(), AWarehouse::StaticClass(), AllWarehouses);
@@ -96,14 +127,14 @@ TArray<AWarehouse*> AWarehouse::FindNeighboringWarehouses()
             float Distance = FVector::Dist(Warehouse->GetActorLocation(), GetActorLocation());
 
             if (Distance <= 1000.0f) // Если склад находится в пределах радиуса 1000 единиц
-                NeighboringWarehouses.Add(Warehouse);
+                neighboring_warehouses.Add(Warehouse);
         }
     }
 
-    return NeighboringWarehouses;
+    return neighboring_warehouses;
 }
-
-ACarrier* AWarehouse::FindAvailableCarrier()
+//-------------------------------------------------------------------------------------------------------------
+ACarrier* AWarehouse::Find_Available_Carrier()
 {
     TArray<AActor*> AllCarriers;
 
@@ -118,3 +149,4 @@ ACarrier* AWarehouse::FindAvailableCarrier()
 
     return nullptr;
 }
+//-------------------------------------------------------------------------------------------------------------

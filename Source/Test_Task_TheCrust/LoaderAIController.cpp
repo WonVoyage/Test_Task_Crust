@@ -1,62 +1,59 @@
 #include "LoaderAIController.h"
 #include "Kismet/GameplayStatics.h"
-
+//-------------------------------------------------------------------------------------------------------------
 ALoaderAIController::ALoaderAIController()
 {
     PrimaryActorTick.bCanEverTick = true;
 }
-
+//-------------------------------------------------------------------------------------------------------------
 void ALoaderAIController::BeginPlay()
 {
     Super::BeginPlay();
-    FindNearestWarehouse();
+    Move_To_Warehouse();
 }
-
-void ALoaderAIController::FindNearestWarehouse()
+//-------------------------------------------------------------------------------------------------------------
+void ALoaderAIController::Move_To_Warehouse()
 {
-    // Получаем все склады
-    TArray<AActor*> FoundWarehouses;
-    UGameplayStatics::GetAllActorsOfClass(GetWorld(), AWarehouse::StaticClass(), FoundWarehouses);
+    //float nearest_distance = FLT_MAX;
+    //int carried_resource = 0;
+    //TArray<AActor*> found_warehouses;
+    //AWarehouse* nearest_warehouse = nullptr;
+    ACarrier* carrier = Cast<ACarrier>(GetPawn());
+    //UGameplayStatics::GetAllActorsOfClass(GetWorld(), AWarehouse::StaticClass(), found_warehouses);
 
-    AWarehouse* NearestWarehouse = nullptr;
-    float NearestDistance = FLT_MAX;
-
-    // Получаем текущего Pawn'а
-    ACarrier* Carrier = Cast<ACarrier>(GetPawn());
-    if (!Carrier)
+    if (!carrier)
     {
         UE_LOG(LogTemp, Warning, TEXT("Failed to get Carrier"));
-        return; // Если Pawn не грузчик, выходим из функции
+        return;
     }
 
-    // Получаем ресурс, который несет грузчик
-    int32 CarriedResourceType = Carrier->CarriedResourceType;
+    //carried_resource = carrier->Carried_Resource;
 
-    for (AActor* WarehouseActor : FoundWarehouses)
+    //for (AActor *warehouse_actor : found_warehouses)
+    //{
+    //    AWarehouse *warehouse = Cast<AWarehouse>(warehouse_actor);
+
+    //    if (warehouse == carrier->Target_Warehouse) continue;
+    //    if (warehouse && warehouse->Resource == carried_resource)
+    //    {
+    //        // Сравниваем расстояния, чтобы найти ближайший склад
+    //        float distance = FVector::Dist(warehouse->GetActorLocation(), carrier->GetActorLocation());
+
+    //        if (distance < nearest_distance)
+    //        {
+    //            nearest_warehouse = warehouse;
+    //            nearest_distance = distance;
+    //            carrier->Source_Warehouse = carrier->Target_Warehouse;
+    //            carrier->Target_Warehouse = nearest_warehouse;
+    //        }
+    //    }
+    //}
+
+    if (carrier->Target_Warehouse)
     {
-        AWarehouse* Warehouse = Cast<AWarehouse>(WarehouseActor);
-
-        if (Warehouse == Carrier->TargetWarehouse) continue;
-        if (Warehouse && Warehouse->ResourceType == CarriedResourceType)
-        {
-            // Сравниваем расстояния, чтобы найти ближайший склад
-            float Distance = FVector::Dist(Warehouse->GetActorLocation(), Carrier->GetActorLocation());
-
-            if (Distance < NearestDistance)
-            {
-                NearestWarehouse = Warehouse;
-                NearestDistance = Distance;
-                Carrier->TargetWarehouse = NearestWarehouse;
-            }
-        }
-    }
-
-    if (NearestWarehouse)
-    {
-        // Проверяем, что AIController может перемещаться
         if (GetNavAgentPropertiesRef().bCanCrouch || GetNavAgentPropertiesRef().bCanFly || GetNavAgentPropertiesRef().bCanJump || GetNavAgentPropertiesRef().bCanSwim || GetNavAgentPropertiesRef().bCanWalk)
         {
-            MoveToActor(NearestWarehouse);
+            MoveToActor(carrier->Target_Warehouse);
         }
         else
         {
@@ -68,3 +65,4 @@ void ALoaderAIController::FindNearestWarehouse()
         UE_LOG(LogTemp, Warning, TEXT("No suitable warehouse found."));
     }
 }
+//-------------------------------------------------------------------------------------------------------------

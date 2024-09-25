@@ -5,7 +5,7 @@
 #include "Warehouse.generated.h"
 
 class ACarrier;
-
+//-------------------------------------------------------------------------------------------------------------
 UCLASS()
 class AWarehouse : public AActor
 {
@@ -14,18 +14,19 @@ class AWarehouse : public AActor
 public:
     AWarehouse();
 
-    UFUNCTION(BlueprintCallable, Category = "Warehouse") void AddResource(int32 Amount);
-    UFUNCTION(BlueprintCallable, Category = "Warehouse") void RemoveResource(int32 Amount);
+    UFUNCTION(BlueprintCallable, Category = "Warehouse") void Add_Resource(int amount);
+    UFUNCTION(BlueprintCallable, Category = "Warehouse") void Remove_Resource(int amount);
 
-    void DistributeResourceToNeighbors();
-    TArray<AWarehouse*> FindNeighboringWarehouses();
-    ACarrier* FindAvailableCarrier();
+    void Distribute_Resource_To_Neighbors();
+    TArray<AWarehouse*> Find_Neighboring_Warehouses();
+    ACarrier* Find_Available_Carrier();
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Warehouse") int32 ResourceType;  // (от 0 до 49)
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Warehouse") int32 MaxCapacity;
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Warehouse") int32 CurrentAmount;
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Warehouse") bool bIsActive;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Warehouse") int Resource;  // (от 0 до 49)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Warehouse") int Capacity;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Warehouse") int Current_Amount;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Warehouse") bool Is_Active;
     
 protected:
     virtual void BeginPlay() override;
 };
+//-------------------------------------------------------------------------------------------------------------

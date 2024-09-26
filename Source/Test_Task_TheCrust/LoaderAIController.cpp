@@ -18,7 +18,7 @@ void ALoaderAIController::Move_To_Warehouse()
     //int carried_resource = 0;
     //TArray<AActor*> found_warehouses;
     //AWarehouse* nearest_warehouse = nullptr;
-    ACarrier* carrier = Cast<ACarrier>(GetPawn());
+    ACarrier *carrier = Cast<ACarrier>(GetPawn());
     //UGameplayStatics::GetAllActorsOfClass(GetWorld(), AWarehouse::StaticClass(), found_warehouses);
 
     if (!carrier)

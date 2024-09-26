@@ -1,5 +1,6 @@
 #include "Carrier.h"
 #include "Warehouse.h"
+#include <Kismet/GameplayStatics.h>
 //-------------------------------------------------------------------------------------------------------------
 ACarrier::ACarrier()
 {
@@ -14,6 +15,31 @@ ACarrier::ACarrier()
 void ACarrier::BeginPlay()
 {
     Super::BeginPlay();
+
+    float nearest_distance = FLT_MAX;
+    TArray<AActor*> found_warehouses;
+    AWarehouse* nearest_warehouse = nullptr;
+    UGameplayStatics::GetAllActorsOfClass(GetWorld(), AWarehouse::StaticClass(), found_warehouses);
+
+    for (AActor *warehouse_actor : found_warehouses)
+    {
+        AWarehouse *warehouse = Cast<AWarehouse>(warehouse_actor);
+
+        if (warehouse == Target_Warehouse) continue;
+        if (warehouse && warehouse->Resource == Carried_Resource)
+        {
+            // Сравниваем расстояния, чтобы найти ближайший склад
+            float distance = FVector::Dist(warehouse->GetActorLocation(), GetActorLocation());
+
+            if (distance < nearest_distance)
+            {
+                nearest_warehouse = warehouse;
+                nearest_distance = distance;
+                Source_Warehouse = Target_Warehouse;
+                Target_Warehouse = nearest_warehouse;
+            }
+        }
+    }
 }
 //-------------------------------------------------------------------------------------------------------------
 void ACarrier::Pick_Up_Resource(AWarehouse *from_warehouse)
@@ -72,6 +98,7 @@ void ACarrier::On_Arrived_At_Warehouse()
             break;
 
         case EActionType::Go_To_Give:
+            //Source_Warehouse = Target_Warehouse;
             Target_Warehouse->Add_Resource(Carried_Amount);
             Carried_Amount = 0;
             Is_Avaliable = true;

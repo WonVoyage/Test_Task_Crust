@@ -16,37 +16,6 @@ AWarehouse::AWarehouse()
 void AWarehouse::BeginPlay()
 {
     Super::BeginPlay();
-    ACarrier* carrier = Find_Available_Carrier();
-
-    float nearest_distance = FLT_MAX;
-    int carried_resource = 0;
-    TArray<AActor*> found_warehouses;
-    AWarehouse* nearest_warehouse = nullptr;
-    UGameplayStatics::GetAllActorsOfClass(GetWorld(), AWarehouse::StaticClass(), found_warehouses);
-
-    carried_resource = carrier->Carried_Resource;
-
-    for (AActor *warehouse_actor : found_warehouses)
-    {
-        AWarehouse *warehouse = Cast<AWarehouse>(warehouse_actor);
-
-        if (warehouse == carrier->Target_Warehouse) continue;
-        if (warehouse && warehouse->Resource == carried_resource)
-        {
-            // Сравниваем расстояния, чтобы найти ближайший склад
-            float distance = FVector::Dist(warehouse->GetActorLocation(), carrier->GetActorLocation());
-
-            if (distance < nearest_distance)
-            {
-                nearest_warehouse = warehouse;
-                nearest_distance = distance;
-                carrier->Source_Warehouse = carrier->Target_Warehouse;
-                carrier->Target_Warehouse = nearest_warehouse;
-            }
-        }
-    }
-
-
 }
 //-------------------------------------------------------------------------------------------------------------
 void AWarehouse::Add_Resource(int amount)
@@ -91,7 +60,9 @@ void AWarehouse::Distribute_Resource_To_Neighbors()
             {
                 if (available_carrier)
                 {
-                    //available_carrier->Move_To_Warehouse(neighbor_warehouse);
+                    available_carrier->Move_To_Warehouse(neighbor_warehouse);
+                    available_carrier->Carried_Amount += resource_to_transfer;
+                    available_carrier->Action_Type = EActionType::Go_To_Give;
                     Current_Amount -= resource_to_transfer;
                 }
             }
@@ -104,7 +75,7 @@ void AWarehouse::Distribute_Resource_To_Neighbors()
             {
                 if (available_carrier)
                 {
-                    //available_carrier->Move_To_Warehouse(neighbor_warehouse);
+                    available_carrier->Move_To_Warehouse(neighbor_warehouse);
                     available_carrier->Action_Type = EActionType::Go_To_Take;
                 }
             }

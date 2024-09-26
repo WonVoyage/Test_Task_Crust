@@ -10,7 +10,7 @@ UENUM(BlueprintType)
 enum class EActionType : uint8
 {
     None,
-    Go_To_Waiting_Point,
+    Is_Waiting,
     Go_To_Take,
     Go_To_Give
 };

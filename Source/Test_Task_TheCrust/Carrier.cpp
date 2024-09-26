@@ -90,7 +90,7 @@ void ACarrier::On_Arrived_At_Warehouse()
         case EActionType::None:
             break;
 
-        case EActionType::Go_To_Waiting_Point:
+        case EActionType::Is_Waiting:
             break;
 
         case EActionType::Go_To_Take:

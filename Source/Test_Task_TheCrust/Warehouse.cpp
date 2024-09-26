@@ -1,5 +1,6 @@
 #include "Warehouse.h"
 #include "Carrier.h"
+#include "Waiting_Point.h"
 
 #include <Kismet/GameplayStatics.h>
 //-------------------------------------------------------------------------------------------------------------
@@ -8,8 +9,8 @@ AWarehouse::AWarehouse()
     PrimaryActorTick.bCanEverTick = true;
 
     Capacity = FMath::RandRange(10, 500);
-    Current_Amount = 0;
     Resource = FMath::RandRange(0, 49);
+    Current_Amount = 0;
     Is_Active = true;
 }
 //-------------------------------------------------------------------------------------------------------------
@@ -66,6 +67,14 @@ void AWarehouse::Distribute_Resource_To_Neighbors()
                     Current_Amount -= resource_to_transfer;
                 }
             }
+            else
+            {
+                AActor* waiting_point_actor = UGameplayStatics::GetActorOfClass(GetWorld(), AWaiting_Point::StaticClass());
+                AWaiting_Point* waiting_point = Cast<AWaiting_Point>(waiting_point_actor);
+                available_carrier->Move_To_Warehouse(waiting_point);
+                available_carrier->Action_Type = EActionType::Is_Waiting;
+            }
+
         }
         else if (neighbor_fill_percentage > current_fill_percentage)
         {
@@ -79,6 +88,21 @@ void AWarehouse::Distribute_Resource_To_Neighbors()
                     available_carrier->Action_Type = EActionType::Go_To_Take;
                 }
             }
+            else
+            {
+                AActor* waiting_point_actor = UGameplayStatics::GetActorOfClass(GetWorld(), AWaiting_Point::StaticClass());
+                AWaiting_Point* waiting_point = Cast<AWaiting_Point>(waiting_point_actor);
+                available_carrier->Move_To_Warehouse(waiting_point);
+                available_carrier->Action_Type = EActionType::Is_Waiting;
+            }
+
+        }
+        else
+        {
+           AActor *waiting_point_actor = UGameplayStatics::GetActorOfClass(GetWorld(), AWaiting_Point::StaticClass());
+           AWaiting_Point *waiting_point = Cast<AWaiting_Point>(waiting_point_actor);
+           available_carrier->Move_To_Warehouse(waiting_point);
+           available_carrier->Action_Type = EActionType::Is_Waiting;
         }
     }
 }
@@ -86,19 +110,19 @@ void AWarehouse::Distribute_Resource_To_Neighbors()
 TArray<AWarehouse*> AWarehouse::Find_Neighboring_Warehouses()
 {
     TArray<AWarehouse*> neighboring_warehouses;
-    TArray<AActor*> AllWarehouses;
+    TArray<AActor*> all_warehouses;
 
-    UGameplayStatics::GetAllActorsOfClass(GetWorld(), AWarehouse::StaticClass(), AllWarehouses);
+    UGameplayStatics::GetAllActorsOfClass(GetWorld(), AWarehouse::StaticClass(), all_warehouses);
 
-    for (AActor* Actor : AllWarehouses)
+    for (AActor *actor : all_warehouses)
     {
-        AWarehouse* Warehouse = Cast<AWarehouse>(Actor);
-        if (Warehouse && Warehouse != this) // Исключаем сам склад
+        AWarehouse *warehouse = Cast<AWarehouse>(actor);
+        if (warehouse && warehouse != this) // Исключаем сам склад
         {
-            float Distance = FVector::Dist(Warehouse->GetActorLocation(), GetActorLocation());
+            float Distance = FVector::Dist(warehouse->GetActorLocation(), GetActorLocation());
 
             if (Distance <= 1000.0f) // Если склад находится в пределах радиуса 1000 единиц
-                neighboring_warehouses.Add(Warehouse);
+                neighboring_warehouses.Add(warehouse);
         }
     }
 
@@ -107,15 +131,15 @@ TArray<AWarehouse*> AWarehouse::Find_Neighboring_Warehouses()
 //-------------------------------------------------------------------------------------------------------------
 ACarrier* AWarehouse::Find_Available_Carrier()
 {
-    TArray<AActor*> AllCarriers;
+    TArray<AActor*> all_carriers;
 
-    UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACarrier::StaticClass(), AllCarriers);
+    UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACarrier::StaticClass(), all_carriers);
 
-    for (AActor* Actor : AllCarriers)
+    for (AActor *actor : all_carriers)
     {
-        ACarrier* Carrier = Cast<ACarrier>(Actor);
-        if (Carrier && Carrier->Is_Avaliable)
-            return Carrier;
+        ACarrier *carrier = Cast<ACarrier>(actor);
+        if (carrier && carrier->Is_Avaliable)
+            return carrier;
     }
 
     return nullptr;
